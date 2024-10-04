@@ -8,6 +8,7 @@ import {
 } from '../redux/user/userSlice';
 import OAuth from "../Components/OAuth";
 import { toast } from 'react-toastify';
+import { submitData } from "../APICALLS";
 
 const Login = () => {
   const [formData, setformData] = useState({});
@@ -18,29 +19,26 @@ const Login = () => {
   const handleChange = (e) => {
     setformData({ ...formData, [e.target.id]: e.target.value });
   };
+ 
   const SubmitData = async (e) => {
     e.preventDefault();
     dispatch(Start());
     try {
-      const res = await fetch(process.env.REACT_APP_API_URL+"users/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
-      const data = await res.json();
+      const data = await submitData("users/login", "POST", formData);
+  
       if (data.success === false) {
         dispatch(Failure(data));
         return;
       }
-      toast("Welcome Back!")
+  
+      toast("Welcome Back!");
       dispatch(loginSuccess(data));
       navigate("/");
     } catch (err) {
       dispatch(Failure(err));
     }
   };
+  
   
   return (
     <div className="p-3 max-w-lg mx-auto ">

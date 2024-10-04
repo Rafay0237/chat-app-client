@@ -20,6 +20,20 @@ module.exports = {
     '8xl': '8rem',      // 6 Extra Large
   },
   },
-  plugins: [],
+  plugins: [
+    function ({ addUtilities }) {
+      addUtilities({
+        '.scrollbar-hide::-webkit-scrollbar': {
+          display: 'none',
+        },
+        '.scrollbar-show::-webkit-scrollbar': {
+          display: 'auto',
+        },
+        '.scrollbar-show': {
+          overflow: 'auto',
+        },
+      });
+    },
+  ],
 }
 

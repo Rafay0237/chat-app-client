@@ -1,123 +1,190 @@
-import { useEffect, useState ,useRef} from "react";
-import { useSelector } from "react-redux";
+import { useEffect, useState, useRef } from "react";
 import Conversation from "../Components/Conversation";
+import FreindProfileChatBar from "../Components/FreindProfileChatBar";
 import Messages from "../Components/Messages";
 import SendMessage from "../Components/SendMessage";
-import NoFreinds from "../Components/NoFreinds"
-import axios from 'axios'
-import {io} from "socket.io-client"
+import { useSelector } from "react-redux";
+import { getData, submitData } from "../APICALLS";
+import { io } from "socket.io-client";
+import { TfiGithub } from "react-icons/tfi";
 
-const Chat = () => {
+const ChatPage = () => {
   const { currentUser } = useSelector((state) => state.user);
-  const [conversations,setConversations]=useState([])
-  const [messages,setMessages]=useState([])
-  const [currentChat,setCurrentChat]=useState("")
-  const [freindDp,setFreindDp]=useState("")
-  const [arrivalMessage,setArrivalMessage]=useState(null)
-  const [onlineUsers,setonlineUsers]=useState(null)
-  const socket=useRef()
-  const scrollRef=useRef()
-  const socketURL=process.env.REACT_APP_SOCKET_API_URL 
-  //"ws://localhost:8900"
+  const [conversations, setConversations] = useState(null);
+  const [messages, setMessages] = useState(null);
+  const [currentChat, setCurrentChat] = useState(null);
+  const [onlineUsers, setOnlineUsers] = useState(null);
+  const [loading,setLoading]=useState(false)
+  const [freindDp, setFreindDp] = useState("");
+  const [arrivalMessage, setArrivalMessage] = useState(null);
+  const socket = useRef();
+  const scrollRef = useRef();
+  const socketURL = process.env.REACT_APP_SOCKET_API_URL;
 
-  useEffect(()=>{
-  socket.current=io(socketURL)
+  useEffect(() => {
+    socket.current = io(socketURL);
 
-  socket.current.on('connect_error', (error) => {
-    console.error('Connection error:', error.message);
-  });
+    socket.current.on("connect_error", (error) => {
+      console.error("Connection error:", error.message);
+    });
 
-  socket.current.on("getMessage",(data)=>{
-    setArrivalMessage({
-    sender:data.senderId,
-    text:data.text,
-    createdAt:Date.now()
-    })
-  })
-  },[])
+    socket.current.on("getMessage", (data) => {
+      setArrivalMessage({
+        sender: data.senderId,
+        text: data.text,
+        createdAt: Date.now(),
+      });
+    });
 
- useEffect(()=>{
-  const freindId=currentChat&& currentChat.members.find((m)=>m!==currentUser.user._id)
- arrivalMessage && currentChat!=="" &&currentChat.members.find(user=>user===freindId) &&
- setMessages((prev)=>[...prev,arrivalMessage])
- },[arrivalMessage,currentChat,currentUser.user._id])
+    socket.current.on("getImage", (data) => {
+      setArrivalMessage({
+        sender: data.senderId,
+        img: data.img,
+        createdAt: Date.now(),
+      });
+    });
 
- useEffect(()=>{
-  socket.current.on("getUsers",(data=>{
-    setonlineUsers(data)
-  }))
-},[socket])
+    socket.current.on("updateMessageSeen", (data) => {
+      console.log(data);
+      let updatedMessages = messages.map((message) => {
+        if (
+          message.conversationId === data.conversationId &&
+          message.sender === data.sender
+        ) {
+          return { ...message, seen: true };
+        } else {
+          return message;
+        }
+      });
+      setMessages(updatedMessages);
+    });
+  }, []);
 
-  useEffect(()=>{
-  socket.current.emit("addUser",currentUser.user._id)
-  },[currentUser.user._id])
+  useEffect(() => {
+    const freindId =
+      currentChat &&
+      currentChat.members.find((m) => m !== currentUser.user._id);
+    arrivalMessage &&
+      currentChat &&
+      currentChat.members.find((user) => user === freindId) &&
+      setMessages((prev) => [...prev, arrivalMessage]);
+  }, [arrivalMessage, currentChat, currentUser.user._id]);
 
-  useEffect(()=>{
-    const getConversation=async()=>{
-      try{
-        const res=await axios.get(process.env.REACT_APP_API_URL+'chat/conversation/'+currentUser.user._id)
-        setConversations(res.data.conversation)
-      }catch(err){
-        console.log(err)
-      }
+  useEffect(() => {
+    socket.current.on("getUsers", (data) => {
+      setOnlineUsers(data);
+    });
+  }, [socket]);
+
+  useEffect(() => {
+    socket.current.emit("addUser", currentUser.user._id);
+  }, [currentUser.user._id]);
+
+  useEffect(() => {
+    setLoading(true)
+    getData("chat/conversation/" + currentUser.user._id).then((data) => {
+      setConversations(data.conversation);
+    });
+    setLoading(false)
+  }, []);
+
+  useEffect(() => {
+    if (currentChat) {
+      getData("chat/messages/" + currentChat._id).then((data) => {
+        setMessages(data.messageList);
+      });
+      const freindId = currentChat.members.find(
+        (m) => m !== currentUser.user._id
+      );
+      submitData("chat/messages/update-seen", "PUT", {
+        conversationId: currentChat._id,
+        sender: freindId,
+      });
+
+      socket.current.emit("messageSeen", {
+        conversationId: currentChat._id,
+        sender: freindId,
+      });
     }
-    getConversation()
-  },[currentUser.user._id])
+  }, [currentChat]);
 
-  useEffect(()=>{
-    const getMessages=async()=>{
-      try{
-        await axios.get(process.env.REACT_APP_API_URL+'chat/messages/'+currentChat._id)
-        .then((res)=>{
-          setMessages(res.data.messageList)
-        })
-      }catch(err){
-        console.log(err)
-      }
-    }
-    currentChat&& getMessages()
-  },[currentChat])
-
-  useEffect(()=>{
-  scrollRef.current?.scrollIntoView({behavior:"smooth"})
-  },[messages])
+  useEffect(() => {
+    scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   return (
-    <div className="flex  h-[calc(100vh-65px)] ">
-      <div className={currentChat?
-      "w-1/3 bg-white  hidden sm:block"
-      :"sm:w-1/3 bg-white w-full mx-auto sm:mx-0"
-    }>
-        {conversations.length!==0? conversations?.map((c,index)=>(
-          <div onClick={()=>setCurrentChat(c)}>
-            <Conversation conversation={c} key={index} 
-            userId={currentUser.user._id} setFreindDp={setFreindDp}
-            onlineUsers={onlineUsers}/>
-            <hr style={{width:"80%",border:"0.1px solid #ececec"}}/>
+    <div className="flex h-[calc(100vh-60px)] ">
+      <div
+        className={`${
+          currentChat ? " hidden sm:block" : "sm:w-1/3 w-full mx-auto sm:mx-0"
+        }
+      flex flex-col w-1/3  gap-2 pt-2 bg-[#FFFFFF] overflow-auto scrollbar-hide`}
+      >
+        {loading? 
+        <div className="flex justify-center items-center h-full w-full  ">
+         <p className="text-3xl">Loading...</p>
           </div>
-        )):<NoFreinds/>}
+          :conversations && conversations.length!==0 ?
+          conversations.map((conversation) => (
+          <div
+            onClick={() => setCurrentChat(conversation)}
+            key={conversation._id}
+          >
+            <Conversation
+              conversation={conversation}
+              userId={currentUser.user._id}
+              setFreindDp={setFreindDp}
+              onlineUsers={onlineUsers}
+            />
+          </div>
+        )):
+         <div className="flex flex-col gap-5 justify-center items-center h-full w-full ">
+         <p className="text-3xl">No Conversations yet.</p>
+         <p className="text-2xl"> Connect with People to have a Chat.</p>
+         <TfiGithub className="h-36 w-36"/>
+          </div>}
       </div>
-      <div className={ currentChat?" flex flex-col sm:w-2/3  w-full bg-blue-50 p-2 h-[100%] overflow-hidden  "
-       :" hidden sm:flex flex-col w-2/3  bg-blue-50 p-2 h-[100%] overflow-hidden "}>
-        <div className=" flex-grow overflow-auto ">
-          {messages && messages.map((m,index)=>(
-            <div ref={scrollRef}>
-           <Messages own={m.sender===currentUser.user._id} key={index}
-            message={m} freindDp={freindDp} userDp={currentUser.user.profilePicture}/>
-            </div>
-          ))}    
-        { !currentChat&& 
-          <div className="p-5 text-gray-500 lg:text-3xl md:text-2xl sm:text-xl">
-          <p >Open Conversation to Start a Chat</p>
-            </div>
-          }
+      <div
+        className={`${currentChat ? "sm:w-2/3 w-full" : "hidden sm:flex w-2/3"}
+        flex flex-col  overflow-hidden bg-mobileImg sm:bg-desktopImg `}
+      >
+        <div className="flex-grow overflow-y-auto scrollbar-hide w-full">
+          {currentChat && (
+            <FreindProfileChatBar
+              onlineUsers={onlineUsers}
+              currentChat={currentChat}
+              userId={currentUser.user._id}
+            />
+          )}
+          <div className="pt-[60px]">
+            {messages &&
+              messages.map((m) => (
+                <div ref={scrollRef} key={m._id}>
+                  <Messages
+                    own={m.sender === currentUser.user._id}
+                    message={m}
+                    userDp={currentUser.user.profilePicture}
+                    freindDp={freindDp}
+                  />
+                </div>
+              ))}
+          </div>
+          {!currentChat && (
+            <p className="p-5 text-gray-300 lg:text-3xl md:text-2xl sm:text-xl">
+              Open Conversation to Start a Chat
+            </p>
+          )}
         </div>
-       {currentChat&&
-        <SendMessage currentChat={currentChat} setMessages={setMessages}
-        socket={socket}/>}
+        {currentChat && (
+          <SendMessage
+            currentChat={currentChat}
+            setMessages={setMessages}
+            socket={socket}
+          />
+        )}
       </div>
     </div>
   );
 };
 
-export default Chat;
+export default ChatPage;

@@ -4,6 +4,7 @@ import OAuth from "../Components/OAuth";
 import { useDispatch, useSelector } from "react-redux";
 import { Start, Failure, signUpSuccess } from "../redux/user/userSlice";
 import { toast } from "react-toastify";
+import { submitData } from "../APICALLS";
 
 const SignUp = () => {
   const { error, loading } = useSelector((state) => state.user);
@@ -18,27 +19,21 @@ const SignUp = () => {
   const SubmitData = async (e) => {
     e.preventDefault();
     dispatch(Start());
-    try{
-      const res = await fetch(process.env.REACT_APP_API_URL+"users/sign-up", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(formData),
-    });
-    console.log(formData)
-    const data = await res.json();
-    if (data.success === true) {
-      toast("Account Created!")
-      dispatch(signUpSuccess());
-      navigate("/login");
-    } else {
-      dispatch(Failure(data));
+    try {
+      const data = await submitData("users/sign-up", "POST", formData);
+  
+      if (data.success === true) {
+        toast("Account Created!");
+        dispatch(signUpSuccess());
+        navigate("/login");
+      } else {
+        dispatch(Failure(data));
+      }
+    } catch (err) {
+      dispatch(Failure(err));
     }
-  }catch(err){
-  dispatch(Failure(err))
-  }
   };
+  
   
   return (
     <div className="p-3 max-w-lg mx-auto">

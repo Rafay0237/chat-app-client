@@ -1,3 +1,17 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+@layer components {
+.bg-mobileImg {
+    background-image: url('https://i.pinimg.com/originals/ed/24/d3/ed24d37dfad63bbd8fae98435696d303.jpg');
+    background-size: cover; 
+    background-position: center; 
+}
+.bg-desktopImg {
+    background-image: url('https://wallpapercave.com/wp/wp4410743.png');
+    background-size: cover; 
+    background-position: center; 
+}
+}

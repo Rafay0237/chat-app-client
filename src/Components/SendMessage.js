@@ -1,51 +1,104 @@
-import {useState} from 'react'
+import { useState, useRef } from "react";
 import { useSelector } from "react-redux";
 import { IoSend } from "react-icons/io5";
-import axios from 'axios';
+import { submitData } from "../APICALLS";
+import { IoMdAttach } from "react-icons/io";
+import RenderSendImage from "./RenderSendImage";
 
-const SendMessage = ({currentChat,setMessages,socket}) => {
+const SendMessage = ({ currentChat, setMessages ,socket}) => {
+  const [newMessage, setnewMessage] = useState("");
+  const [image, setImage] = useState(undefined);
+  const [renderImage, setRenderImage] = useState(undefined);
+  const [showImage, setShowImage] = useState(false);
+  const { currentUser } = useSelector((state) => state.user);
+  const fileRef = useRef();
 
-    const [newMessage,setnewMessage]=useState("")
-    const { currentUser } = useSelector((state) => state.user);
-
-  const handelSendMessage=async(e)=>{
-        e.preventDefault();
-        if(newMessage==="") 
-        return 
-        let message={
-          sender:currentUser.user._id,
-          conversationId:currentChat._id,
-          text:newMessage
-        }
-        const receiverId=currentChat.members.find((user)=>user!==currentUser.user._id,)
+  const handleSendMessage = async (e) => {
+    e.preventDefault();
+    if (newMessage === "") return;
+    let message = {
+      sender: currentUser.user._id,
+      conversationId: currentChat._id,
+      text: newMessage,
+    };
+    const receiverId=currentChat.members.find((user)=>user!==currentUser.user._id,)
         socket.current.emit("sendMessage",{
           senderId:currentUser.user._id,
           receiverId,
           text:newMessage
         })
-       try{
-       await axios.post(process.env.REACT_APP_API_URL+'chat/messages/',message)
-       setMessages(prevMessages => [...prevMessages, message]);
-       setnewMessage("")
-       }catch(err){
-        console.log(err)
-       }
-      }
+    submitData("chat/messages/", "POST", message);
+    setMessages((prevMessages) => [...prevMessages, message]);
+    setnewMessage("");
+  };
+
+  const handleImageChange = (event) => {
+    const file = event.target.files[0];
+    setImage(file);
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setRenderImage(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+    setShowImage(true);
+  };
+
+  const handleKeyDown = (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault(); 
+      handleSendMessage(event)
+    }
+  };
 
   return (
-    <div className="flex gap-2 mx-2 mt-5">
+    <div className="flex gap-2  bg-[#F0F2F5] p-3">
+      {!showImage && (
+        <>
           <input
-          onChange={(e)=>setnewMessage(e.target.value)}
+            onChange={(e) => setnewMessage(e.target.value)}
+            onKeyDown={handleKeyDown}
             type="text"
             value={newMessage}
-            placeholder={newMessage!==""?newMessage:"Your Message"}
-            className="p-2 flex-grow rounded-sm sm:w-full w-[70%] "
+            placeholder={newMessage !== "" ? newMessage : "Type a message"}
+            className="p-3 flex-grow rounded-md sm:w-full w-[70%] bg-[#FFFFFF] 
+        placeholder-[#667781] border border-[#dfe3e8]  "
           />
-          <IoSend onClick={handelSendMessage}
-            className="p-2 rounded-lg text-white bg-blue-400 
-            h-10 w-12 hover:cursor-pointer"/>
-        </div>
-  )
-}
 
-export default SendMessage
+          <input
+            type="file"
+            ref={fileRef}
+            hidden
+            onChange={handleImageChange}
+          ></input>
+
+          <IoMdAttach
+            onClick={() => {
+              fileRef.current.click();
+            }}
+            className="p-2 rounded-lg text-dark-grey 
+            h-10 w-12 hover:cursor-pointer mt-1"
+          />
+          <IoSend
+            onClick={handleSendMessage}
+            className="p-2 h-10 w-12 hover:cursor-pointer
+             text-black bg-[#4DBC15] rounded-lg mt-1 hover:bg-[#57af2a]"
+          />
+        </>
+      )}
+      {showImage && (
+        <RenderSendImage
+          renderImage={renderImage}
+          image={image}
+          setMessages={setMessages}
+          currentChat={currentChat}
+          setShowImage={setShowImage}
+          socket={socket}
+        />
+      )}
+    </div>
+  );
+};
+
+export default SendMessage;
