@@ -18,11 +18,13 @@ const RenderSendImage = ({ renderImage, image, setMessages, currentChat, setShow
     formData.append("image", image);
     formData.append("id", currentUser.user._id);
     formData.append("conversationId", currentChat._id);
-    const res = await fetch(process.env.REACT_APP_API_URL + "upload-img/chat", {
+    const res = await fetch(process.env.REACT_APP_API_URL + "upload-dp/chat", {
       method: "POST",
       body: formData,
     });
     const data = await res.json();
+    console.log(data)
+
     if (data.success) {
       setLoading(false);
       let message = {

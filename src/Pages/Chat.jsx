@@ -82,7 +82,7 @@ const ChatPage = () => {
   useEffect(() => {
     setLoading(true)
     getData("chat/conversation/" + currentUser.user._id).then((data) => {
-      setConversations(data.conversation);
+      setConversations(data?.conversation);
     });
     setLoading(false)
   }, []);
@@ -90,7 +90,7 @@ const ChatPage = () => {
   useEffect(() => {
     if (currentChat) {
       getData("chat/messages/" + currentChat._id).then((data) => {
-        setMessages(data.messageList);
+        setMessages(data?.messageList);
       });
       const freindId = currentChat.members.find(
         (m) => m !== currentUser.user._id

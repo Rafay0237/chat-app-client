@@ -4,14 +4,14 @@ import { MdCancel } from "react-icons/md";
 import { MdDownload } from "react-icons/md";
 
 let messageText =
-  " ml-5  text-black bg-[#FFFFFF] font-sans  p-2 px-6  rounded-full  ";
+  " ml-5  text-black bg-[#FFFFFF] font-sans  p-2 px-6  rounded-full ";
 let messageTextOwn =
   " ml-5 text-black bg-[#D9FDD3] font-sans  p-2 px-6  rounded-full ";
 
 const Messages = ({ own, message, freindDp, userDp }) => {
   return (
     <div className="m-2">
-      <div className={"flex p-2  " + (own ? "justify-end" : "")}>
+      <div className={"flex p-2 " + (own ? "justify-end" : "")}>
         <img
           src={own ? userDp : freindDp}
           alt="Profile"

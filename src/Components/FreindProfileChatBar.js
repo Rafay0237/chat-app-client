@@ -29,15 +29,15 @@ const FreindProfileChatBar = ({ onlineUsers, currentChat, setCurrentChat, userId
               className="size-9 rounded-full object-cover "
             />
             {online && (
-              <GoDotFill className="text-[#65c654] absolute -bottom-2 right-0" />
+              <GoDotFill className="text-[#65c654] absolute -bottom-2 -right-1" />
             )}
           </div>
 
           <div>
-            <p className=" text-base font-lightbold  pt-1.5">
+            <p className=" text-medium font-medium ">
               {freind?.userName}
             </p>
-            <p className="text-[10px] text-dark-grey font-lightbold ">
+            <p className="text-[10px] text-gray-600 font-medium ">
               {online && "Online"}
             </p>
           </div>
