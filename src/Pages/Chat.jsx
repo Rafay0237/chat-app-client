@@ -45,7 +45,6 @@ const ChatPage = () => {
     });
 
     socket.current.on("updateMessageSeen", (data) => {
-      console.log(data);
       let updatedMessages = messages.map((message) => {
         if (
           message.conversationId === data.conversationId &&
@@ -113,7 +112,7 @@ const ChatPage = () => {
   }, [messages]);
 
   return (
-    <div className="flex h-[calc(100vh-60px)] ">
+    <div className={"flex h-[100vh] "+(currentChat && "absolute top-0 sm:static w-full")}>
       <div
         className={`${
           currentChat ? " hidden sm:block" : "sm:w-1/3 w-full mx-auto sm:mx-0"
@@ -146,13 +145,14 @@ const ChatPage = () => {
       </div>
       <div
         className={`${currentChat ? "sm:w-2/3 w-full" : "hidden sm:flex w-2/3"}
-        flex flex-col  overflow-hidden bg-mobileImg sm:bg-desktopImg `}
+        flex flex-col  overflow-hidden bg-mobileImg sm:bg-desktopImg relative`}
       >
-        <div className="flex-grow overflow-y-auto scrollbar-hide w-full">
+        <div className="flex-grow overflow-y-auto scrollbar-hide w-full ">
           {currentChat && (
             <FreindProfileChatBar
               onlineUsers={onlineUsers}
               currentChat={currentChat}
+              setCurrentChat={setCurrentChat}
               userId={currentUser.user._id}
             />
           )}

@@ -53,7 +53,7 @@ const SendMessage = ({ currentChat, setMessages ,socket}) => {
   };
 
   return (
-    <div className="flex gap-2  bg-[#F0F2F5] p-3">
+    <div className="flex gap-2  bg-[#F0F2F5] p-3 w-full">
       {!showImage && (
         <>
           <input

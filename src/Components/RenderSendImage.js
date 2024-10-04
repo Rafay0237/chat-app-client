@@ -47,10 +47,10 @@ const RenderSendImage = ({ renderImage, image, setMessages, currentChat, setShow
   };
 
   return (
-    <div className="bg-gray-300 absolute h-[70%] sm:w-[65%] top-[22%] p-2 rounded-md">
+    <div className="bg-gray-300 absolute h-[70%] sm:w-[65%] top-[22%] p-2 rounded-md ">
       {!loading ? (
         <>
-          <img className="h-[90%] w-[80%] pt-[5%] pl-[5%] rounded-md object-cover mx-auto" src={renderImage} />
+          <img className="h-[90%] w-full pt-[5%] pl-[5%] rounded-md object-cover mx-auto" src={renderImage} />
 
           <div className=" absolute bottom-2 right-5 rounded-full bg-[#4DBC15] h-12 w-12 pl-1 ">
             <IoSend
