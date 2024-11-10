@@ -21,7 +21,7 @@ const About = () => {
   }
 
   return (
-    <div className='pt-5 text-center overflow-hidden bg-blue-50 '>
+    <div className='pt-5 text-center overflow-hidden bg-blue-50 h-full '>
     <SearchBar setSearch={setSearch} handleSearch={handleSearch}/>
     <FindUsers data={results}/>
   </div>

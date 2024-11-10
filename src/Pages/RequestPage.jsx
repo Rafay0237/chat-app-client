@@ -22,7 +22,7 @@ const RequestPage = () => {
     },[currentUser.user._id,dispatch])
 
   return (
-    <div  className='pt-5 text-center overflow-hidden bg-blue-50'>
+    <div  className='pt-5 text-center overflow-hidden bg-blue-50 h-full'>
      <h1 className='text-2xl text-black  font-semibold'>Follow Requests</h1>
      <FindUsers data={requests} request={true} />
     </div>

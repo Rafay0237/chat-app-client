@@ -25,7 +25,7 @@ export default function App() {
             <Route element={<PrivateRoute />}>
               <Route path="/" element={<Chat />} />
               <Route path="/requests" element={<RequestPage />} />
-              <Route path="/add-freind" element={<AddFreind />} />
+              <Route path="/add-friend" element={<AddFreind />} />
               <Route path="/profile" element={<Profile />} />
               <Route
                 path="/profile/change-username"
